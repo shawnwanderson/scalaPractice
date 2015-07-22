@@ -19,36 +19,52 @@ abstract class Fighter(p: Position, h: Int, d: Int, r: Int) extends Movable(p){
 	var health: Int = h
 	val damage: Int = d
 	val range: Int = r
-	def strike(enemy: Fighter): Unit = if (inRange(enemy)) hit(enemy)
+	def strike(enemy: Fighter): Boolean = {
+		if (inRange(enemy)) {
+			hit(enemy)
+			return true
+		}
+		else return false
+	}
 	def hit(enemy: Fighter): Unit = enemy.getHit(damage)
 	def getHit(dmg: Int): Unit = health = health - dmg
 	def inRange(enemy: Fighter): Boolean = distance(enemy) <= range
+	def alive(): Boolean = health > 0
 }
 
 class Archer(p: Position, h: Int = 50, d: Int = 4, r: Int = 4) extends Fighter(p, h, d, r){
-	override def toString() = s"Archer at $position"
+	override def toString() = s"Archer at $position with $health health"
 }
 
-class Warrior(p: Position, h: Int = 75, d: Int = 7, r: Int = 1) extends Fighter(p, h, d, r){
-	override def toString() = s"Warrior at $position"
+class Warrior(p: Position, h: Int = 75, d: Int = 7, r: Int = 2) extends Fighter(p, h, d, r){
+	override def toString() = s"Warrior at $position with $health health"
 }
 
 def turn(f: Fighter, enemy: Fighter) = {
-	Random.nextInt % 4 match {
+
+	println(s"$f")
+	Random.nextInt(15) % 4 match {
 		case 0 => f.right
 		case 1 => f.left
 		case 2 => f.up
 		case 3 => f.down
 	}
-	f.strike(enemy)
+	if(f.strike(enemy)){
+		println(s"$f hit $enemy for ${f.damage} damage")
+	}
 }
 
 def simFight() = {
-	val a = new Archer(new Position(Random.nextInt, Random.nextInt))
-	val w = new Warrior(new Position(Random.nextInt, Random.nextInt))
+	val a = new Archer(new Position(Random.nextInt(15), Random.nextInt(15)))
+	val w = new Warrior(new Position(Random.nextInt(15), Random.nextInt(15)))
 
-	while(true){
-
-
+	var i = 0
+	while(a.alive && w.alive){
+		i % 2 match {
+			case 0 => turn(a, w)
+			case 1 => turn(w, a)
+		}
+		i = i + 1
 	}
+	if(a.alive) println("Archer wins!") else println("Warrior wins!")
 }
