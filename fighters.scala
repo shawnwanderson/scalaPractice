@@ -33,9 +33,19 @@ abstract class Fighter(h: Int, d: Int, r: Int, p: Position = new Position(Random
 	def alive(): Boolean = health > 0
 }
 
-trait speed extends Movable{ override val moveSpeed = 2}
+trait Armour extends Fighter{
+	val defense: Int
+	override def getHit(dmg: Int): Unit = {
+		health = health + defense
+		super.getHit(dmg)
+	}
+}
 
-trait sheild extends Fighter{ 
+trait Helm extends Armour{override val defense = 1}
+
+trait Speed extends Movable{ override val moveSpeed = 2}
+
+trait Sheild extends Fighter{ 
 	override def getHit(dmg: Int): Unit = {
 		if(Random.nextInt(100) > 35){
 			health = health - dmg
@@ -44,11 +54,12 @@ trait sheild extends Fighter{
 		}
 	}
 
-class Archer(h: Int = 50, d: Int = 4, r: Int = 4) extends Fighter(h, d, r) with speed{
+
+class Archer(h: Int = 35, d: Int = 4, r: Int = 4) extends Fighter(h, d, r) with Speed{
 	override def toString() = s"Archer at $position with $health health"
 }
 
-class Warrior(h: Int = 75, d: Int = 7, r: Int = 2) extends Fighter(h, d, r) with sheild{
+class Warrior(h: Int = 45, d: Int = 7, r: Int = 2) extends Fighter(h, d, r) with Sheild with Helm{
 	override def toString() = s"Warrior at $position with $health health"
 }
 
