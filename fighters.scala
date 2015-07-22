@@ -7,15 +7,16 @@ class Position(posX: Int, posY: Int){
 	override def toString() = s"($x, $y)"
 }
 
-abstract class Movable(var position: Position){
-	def right():Unit = position = new Position(position.x + 1, position.y)
-	def left(): Unit = position = new Position(position.x - 1, position.y)
-	def up(): 	Unit = position = new Position(position.x, position.y + 1)
-	def down(): Unit = position = new Position(position.x, position.y - 1)
+abstract class Movable(var position: Position, val moveSpeed: Int = 1){
+	def right():Unit = position = new Position(position.x + moveSpeed, position.y)
+	def left(): Unit = position = new Position(position.x - moveSpeed, position.y)
+	def up(): 	Unit = position = new Position(position.x, position.y + moveSpeed)
+	def down(): Unit = position = new Position(position.x, position.y - moveSpeed)
 	def distance(that: Movable) = this.position.distance(that.position)
 }
 
-abstract class Fighter(p: Position, h: Int, d: Int, r: Int) extends Movable(p){
+
+abstract class Fighter(h: Int, d: Int, r: Int, p: Position = new Position(Random.nextInt(15), Random.nextInt(15))) extends Movable(p){
 	var health: Int = h
 	val damage: Int = d
 	val range: Int = r
@@ -32,11 +33,22 @@ abstract class Fighter(p: Position, h: Int, d: Int, r: Int) extends Movable(p){
 	def alive(): Boolean = health > 0
 }
 
-class Archer(p: Position, h: Int = 50, d: Int = 4, r: Int = 4) extends Fighter(p, h, d, r){
+trait speed extends Movable{ override val moveSpeed = 2}
+
+trait sheild extends Fighter{ 
+	override def getHit(dmg: Int): Unit = {
+		if(Random.nextInt(100) > 35){
+			health = health - dmg
+			} 
+			else println("Attack was blocked!")
+		}
+	}
+
+class Archer(h: Int = 50, d: Int = 4, r: Int = 4) extends Fighter(h, d, r) with speed{
 	override def toString() = s"Archer at $position with $health health"
 }
 
-class Warrior(p: Position, h: Int = 75, d: Int = 7, r: Int = 2) extends Fighter(p, h, d, r){
+class Warrior(h: Int = 75, d: Int = 7, r: Int = 2) extends Fighter(h, d, r) with sheild{
 	override def toString() = s"Warrior at $position with $health health"
 }
 
@@ -55,8 +67,8 @@ def turn(f: Fighter, enemy: Fighter) = {
 }
 
 def simFight() = {
-	val a = new Archer(new Position(Random.nextInt(15), Random.nextInt(15)))
-	val w = new Warrior(new Position(Random.nextInt(15), Random.nextInt(15)))
+	val a = new Archer
+	val w = new Warrior
 
 	var i = 0
 	while(a.alive && w.alive){
