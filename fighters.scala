@@ -27,7 +27,10 @@ abstract class Fighter(h: Int, d: Int, r: Int, p: Position = new Position(Random
 		}
 	}
 	def hit(enemy: Fighter): Unit = enemy.getHit(damage)
-	def getHit(dmg: Int): Unit = health = health - dmg
+	def getHit(dmg: Int): Unit = {
+		health = health - dmg
+		if (health <= 0) println(s"$this HAS DIED")
+	}
 	def inRange(enemy: Fighter): Boolean = distance(enemy) <= range
 	def alive(): Boolean = health > 0
 	def heal(h: Int): Unit = health = health + h
@@ -81,11 +84,14 @@ trait Sheild extends Fighter{
 		if(Random.nextInt(100) > 35){
 			health = health - dmg
 			} 
-			else println("Attack was blocked!")
+			else {
+				println("Attack was blocked!")
+				super.getHit(dmg / 2)
+			}
 		}
 	}
 
-class Mage(h: Int = 35, d: Int = 2, r: Int = 2, m: Int = 25, spells: List[Magic] = List(new Fira, new Cura)) extends Caster(h, d, r, m, spells){
+class Mage(h: Int = 35, d: Int = 3, r: Int = 2, m: Int = 50, spells: List[Magic] = List(new Fira, new Cura)) extends Caster(h, d, r, m, spells){
 	override def toString() = s"Mage at $position with $health health and $mana mana"
 	override def strike(enemy: Fighter): Unit = {
 		val currentSpell = spells(Random.nextInt(spells.length))
@@ -120,19 +126,19 @@ def turn(f: Fighter, enemies: List[Fighter]) = {
 	f.strike(enemies(Random.nextInt(enemies.length)))
 }
 
-def simFight() = {
-	val a = new Archer
-	val w = new Warrior
-	val m = new Mage
-
-	var i = 0
-	while(a.alive && w.alive && m.alive){
-		i % 3 match {
-			case 0 => turn(a, List(w, m))
-			case 1 => turn(w, List(a, m))
-			case 2 => turn(m, List(a, w))
-		}
-		i = i + 1
-	}
-	if(a.alive) println("Archer wins!") else println("Warrior wins!")
+def doneFighting(heros: List[Fighter]): Boolean = {
+	if(heros.map(h => if(h.alive) 1 else 0).sum <= 1) return true
+	else return false
 }
+
+val heros = List(new Warrior(), new Mage(), new Archer())
+
+def simFight(heros: List[Fighter], i: Int = 0): Unit = {
+	if (doneFighting(heros)) println(s"$heros is the WINNER")
+	else{ 
+		val j = i % heros.length
+		turn(heros(j), heros.take(j) ++ heros.drop(j + 1))
+		simFight(heros.filter(_.alive), i + 1)
+	}
+}
+
